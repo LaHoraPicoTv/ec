@@ -1,0 +1,90 @@
+ .footer {
+            background-color: #1a1a1a;
+            color: #fff;
+            padding: 40px 0 20px;
+            margin-top: 60px;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            color: #ff6b35;
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .footer-section p, .footer-section a {
+            color: #ddd;
+            line-height: 1.8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        .footer-section a:hover {
+            color: #ff6b35;
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .social-links a {
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .social-links a:hover {
+            transform: translateY(-3px);
+            opacity: 0.8;
+        }
+        
+        .social-links img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .contact-info {
+            line-height: 1.8;
+        }
+        
+        .contact-icon {
+            color: #ff6b35;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .footer-bottom p {
+            margin: 5px 0;
+        }
+        
+        .footer-logo {
+            color: #ff6b35;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
