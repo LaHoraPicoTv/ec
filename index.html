@@ -55,9 +55,9 @@
             <br>
             <h2 style=" font-weight: bolder; letter-spacing: -1px;">Mantente informado con las noticias más recientes de Ecuador, minuto a minuto. Política, economía, sucesos, deportes, clima y más… ¡Todo en un solo lugar y al instante!</h2>
  <br><br>
- <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">NOTICIA DE MENTIRA</h1>
-<h2 style="font-weight:lighter ; letter-spacing: -1px;">El presidente Donald Trump anunció el ataque a objetivos estratégicos, marcando un hito histórico al ser la primera incursión de fuerzas estadounidenses en zonas bajo control del régimen de Maduro.</h2> 
-<br><br><br><br>
+<div id="contenedor-noticias">
+    <p>Cargando noticias de La Hora Pico...</p>
+</div>
 
             <br><br>
  <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">EE.UU. confirma primera ofensiva militar contra el narcotráfico en territorio venezolano</h1>
@@ -420,5 +420,64 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
         </div>
     </footer>
     <script src="script.js"></script>
+    <script>
+  // CONFIGURACIÓN: El robot busca en tu repositorio
+  const repo = "LaHoraPicoTv/ec";
+  const carpeta = "content/noticias";
+  const contenedor = document.getElementById('contenedor-noticias');
+
+  // 1. Pedir la lista de noticias a GitHub
+  fetch(`https://api.github.com/repos/${repo}/contents/${carpeta}`)
+    .then(response => response.json())
+    .then(archivos => {
+      contenedor.innerHTML = ""; // Limpiar mensaje de carga
+      
+      // Ordenar para mostrar la más reciente primero (truco rápido por nombre)
+      archivos.reverse();
+
+      // 2. Leer cada noticia
+      archivos.forEach(archivo => {
+        if (archivo.name.endsWith('.md')) {
+          fetch(archivo.download_url)
+            .then(res => res.text())
+            .then(texto => {
+              // 3. Extraer datos (Título, Fecha, Imagen) del texto crudo
+              const lineas = texto.split('\n');
+              let titulo = "Noticia Sin Título";
+              let imagen = "img/default.jpg";
+              let cuerpo = "";
+              
+              // Buscamos la info dentro del archivo
+              lineas.forEach(linea => {
+                if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/"/g, '').trim();
+                if (linea.startsWith('image:')) imagen = linea.replace('image:', '').replace(/"/g, '').trim();
+                // Si la linea no es configuración, es cuerpo de la noticia (simplificado)
+                if (!linea.includes(':') && !linea.includes('---')) cuerpo += linea + " ";
+              });
+
+              // Recortar el texto para que no sea muy largo en portada
+              let resumen = cuerpo.substring(0, 150) + "...";
+
+              // 4. Crear la tarjeta HTML de la noticia
+              const tarjeta = `
+                <article style="margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px;">
+                  <img src="${imagen}" alt="${titulo}" style="width:100%; max-width: 600px; border-radius: 8px;">
+                  <h3 style="color: #d35400; margin-top: 10px;">${titulo}</h3>
+                  <p>${resumen}</p>
+                  <a href="#" style="font-weight: bold; color: #333;">Leer más →</a>
+                </article>
+              `;
+
+              // 5. Insertar en la página
+              contenedor.innerHTML += tarjeta;
+            });
+        }
+      });
+    })
+    .catch(error => {
+      console.error(error);
+      contenedor.innerHTML = "<p>Hubo un error cargando las noticias.</p>";
+    });
+</script>
 </body>
 </html>
