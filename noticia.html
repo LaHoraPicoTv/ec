@@ -55,10 +55,9 @@
             <br>
             <h2 style=" font-weight: bolder; letter-spacing: -1px;">Mantente informado con las noticias más recientes de Ecuador, minuto a minuto. Política, economía, sucesos, deportes, clima y más… ¡Todo en un solo lugar y al instante!</h2>
  <br><br>
-<div id="contenedor-noticias">
-    <p>Cargando noticias de La Hora Pico...</p>
+<div id="detalle-noticia" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <p>Cargando noticia...</p>
 </div>
-
             <br><br>
  <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">EE.UU. confirma primera ofensiva militar contra el narcotráfico en territorio venezolano</h1>
 <h2 style="font-weight:lighter ; letter-spacing: -1px;">El presidente Donald Trump anunció el ataque a objetivos estratégicos, marcando un hito histórico al ser la primera incursión de fuerzas estadounidenses en zonas bajo control del régimen de Maduro.</h2> 
@@ -421,67 +420,52 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  const repo = "LaHoraPicoTv/ec";
-  const carpeta = "content/noticias";
-  const contenedor = document.getElementById('contenedor-noticias');
+    // 1. LEER QUÉ NOTICIA QUIEREN VER (Desde la URL)
+    const params = new URLSearchParams(window.location.search);
+    const rutaNoticia = params.get('p'); // 'p' será la ruta del archivo
 
-  fetch(`https://api.github.com/repos/${repo}/contents/${carpeta}`)
-    .then(response => response.json())
-    .then(archivos => {
-      contenedor.innerHTML = ""; 
-      archivos.reverse();
-
-      archivos.forEach(archivo => {
-        if (archivo.name.endsWith('.md')) {
-          fetch(archivo.download_url)
+    if (!rutaNoticia) {
+        document.getElementById('detalle-noticia').innerHTML = "<h2>No se especificó ninguna noticia.</h2>";
+    } else {
+        // 2. BUSCAR LA NOTICIA EN GITHUB
+        fetch(rutaNoticia) // Aquí usamos la ruta directa que pasaremos desde el index
             .then(res => res.text())
             .then(texto => {
-              const lineas = texto.split('\n');
-              let titulo = "Sin título";
-              let imagenPath = "";
-              let cuerpo = "";
-              
-              lineas.forEach(linea => {
-                if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
-                if (linea.startsWith('image:')) {
-                    imagenPath = linea.replace('image:', '').replace(/['"]+/g, '').trim();
-                    // IMPORTANTE: Aseguramos que la ruta sea correcta para el navegador
-                    if (imagenPath.startsWith('/')) imagenPath = imagenPath; // Dejamos la barra inicial
-                }
-                if (!linea.includes(':') && !linea.includes('---') && linea.trim() !== '') {
-                    cuerpo += linea + " ";
-                }
-              });
+                // 3. EXTRAER DATOS (Igual que antes pero completo)
+                const lineas = texto.split('\n');
+                let titulo = "Noticia";
+                let imagen = "";
+                let cuerpo = "";
+                let leyendoCuerpo = false;
 
-              let resumen = cuerpo.substring(0, 200) + "...";
-              
-              // ENLACE MÁGICO: Enviamos al usuario a noticia.html con la dirección del archivo
-              const linkLeerMas = `noticia.html?p=${archivo.download_url}`;
+                lineas.forEach(linea => {
+                    if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
+                    if (linea.startsWith('image:')) {
+                        imagen = linea.replace('image:', '').replace(/['"]+/g, '').trim();
+                    }
+                    if (linea.trim().startsWith('---') && titulo !== "Noticia") {
+                        leyendoCuerpo = true; // Empezamos a leer el texto real después del segundo ---
+                    } else if (leyendoCuerpo && !linea.trim().startsWith('---')) {
+                        cuerpo += `<p>${linea}</p>`; // Convertimos cada línea en párrafo
+                    }
+                });
 
-              const tarjeta = `
-                <div style="margin-bottom: 60px; border-bottom: 1px solid #eee; padding-bottom: 30px;">
+                // 4. PINTAR LA NOTICIA
+                const html = `
+                    <h1 style="color: chocolate; font-family: Arial; font-size: 36px;">${titulo}</h1>
                     <br>
-                    <h1 style="font-family: Arial, sans-serif; font-weight: bolder; color: chocolate; font-size: 28px; margin-bottom: 10px;">
-                        ${titulo}
-                    </h1>
-                    <h2 style="font-weight:lighter; font-size: 18px; color: #444; line-height: 1.4;">
-                        ${resumen}
-                        <br><br>
-                        <a href="${linkLeerMas}" style="font-weight: bold; color: chocolate; text-decoration: none; border: 1px solid chocolate; padding: 5px 10px; border-radius: 4px;">
-                           Leer noticia completa →
-                        </a>
-                    </h2> 
-                    <br>
-                    <div class="constitution-banner">
-                        <img src="${imagenPath}" alt="${titulo}" style="width: 100%; border-radius: 4px; display: block;" onerror="this.style.display='none'">
+                    <img src="${imagen}" style="width:100%; border-radius:10px;">
+                    <br><br>
+                    <div style="font-family: Georgia, serif; font-size: 18px; line-height: 1.6; color: #333;">
+                        ${cuerpo}
                     </div>
-                </div>
-              `;
-              contenedor.innerHTML += tarjeta;
-            });
-        }
-      });
-    });
+                    <br>
+                    <a href="index.html" style="background: chocolate; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">← Volver a la Portada</a>
+                `;
+                document.getElementById('detalle-noticia').innerHTML = html;
+            })
+            .catch(e => document.getElementById('detalle-noticia').innerHTML = "Error cargando la noticia.");
+    }
 </script>
 </body>
 </html>
