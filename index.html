@@ -421,6 +421,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
+  // CONFIGURACIÓN BÁSICA
   const repo = "LaHoraPicoTv/ec";
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
@@ -429,7 +430,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; 
-      archivos.reverse();
+      archivos.reverse(); // Las más nuevas primero
 
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
@@ -437,43 +438,44 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
             .then(res => res.text())
             .then(texto => {
               const lineas = texto.split('\n');
-              let titulo = "Sin título";
+              let titulo = "";
               let imagenPath = "";
               let cuerpo = "";
               
               lineas.forEach(linea => {
                 if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
+                
+                // --- ARREGLO DE IMAGEN (INTENTO 2) ---
                 if (linea.startsWith('image:')) {
                     imagenPath = linea.replace('image:', '').replace(/['"]+/g, '').trim();
-                    // IMPORTANTE: Aseguramos que la ruta sea correcta para el navegador
-                    if (imagenPath.startsWith('/')) imagenPath = imagenPath; // Dejamos la barra inicial
+                    // TRUCO: Si la ruta empieza con "/", se la quitamos.
+                    // Dejamos que sea "img/uploads/foto.jpg" en lugar de "/img/uploads/foto.jpg"
+                    if (imagenPath.startsWith('/')) imagenPath = imagenPath.substring(1);
                 }
+
+                // Extraer todo el cuerpo del texto
                 if (!linea.includes(':') && !linea.includes('---') && linea.trim() !== '') {
                     cuerpo += linea + " ";
                 }
               });
 
-              let resumen = cuerpo.substring(0, 200) + "...";
-              
-              // ENLACE MÁGICO: Enviamos al usuario a noticia.html con la dirección del archivo
-              const linkLeerMas = `noticia.html?p=${archivo.download_url}`;
-
+              // --- DISEÑO EXACTO AL TUYO ---
+              // Usamos el cuerpo entero como subtítulo H2 y quitamos el botón.
               const tarjeta = `
-                <div style="margin-bottom: 60px; border-bottom: 1px solid #eee; padding-bottom: 30px;">
-                    <br>
-                    <h1 style="font-family: Arial, sans-serif; font-weight: bolder; color: chocolate; font-size: 28px; margin-bottom: 10px;">
+                <div style="margin-bottom: 80px; border-bottom: 2px solid chocolate; padding-bottom: 40px;">
+                    <br><br>
+                    <h1 style="font-family: Arial, sans-serif; font-weight: bolder; color: chocolate; font-size: 32px; letter-spacing: -1px; margin-bottom: 15px; line-height: 1.2;">
                         ${titulo}
                     </h1>
-                    <h2 style="font-weight:lighter; font-size: 18px; color: #444; line-height: 1.4;">
-                        ${resumen}
-                        <br><br>
-                        <a href="${linkLeerMas}" style="font-weight: bold; color: chocolate; text-decoration: none; border: 1px solid chocolate; padding: 5px 10px; border-radius: 4px;">
-                           Leer noticia completa →
-                        </a>
+                    
+                    <h2 style="font-weight:lighter; font-size: 22px; color: #222; line-height: 1.5; letter-spacing: -0.5px; font-family: Arial, sans-serif;">
+                        ${cuerpo}
                     </h2> 
-                    <br>
+                    
+                    <br><br><br>
+
                     <div class="constitution-banner">
-                        <img src="${imagenPath}" alt="${titulo}" style="width: 100%; border-radius: 4px; display: block;" onerror="this.style.display='none'">
+                        <img src="${imagenPath}" alt="${titulo}" style="width: 100%; border-radius: 4px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     </div>
                 </div>
               `;
@@ -481,7 +483,8 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
             });
         }
       });
-    });
+    })
+    .catch(e => console.error("Error:", e));
 </script>
 </body>
 </html>
