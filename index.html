@@ -420,63 +420,82 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
         </div>
     </footer>
     <script src="script.js"></script>
-    <script>
-  // CONFIGURACIÓN: El robot busca en tu repositorio
+<script>
+  // CONFIGURACIÓN: Tu repositorio
   const repo = "LaHoraPicoTv/ec";
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
 
-  // 1. Pedir la lista de noticias a GitHub
+  // 1. Obtener la lista de archivos
   fetch(`https://api.github.com/repos/${repo}/contents/${carpeta}`)
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; // Limpiar mensaje de carga
       
-      // Ordenar para mostrar la más reciente primero (truco rápido por nombre)
+      // Ordenar para que salga la más nueva arriba
       archivos.reverse();
 
-      // 2. Leer cada noticia
+      // 2. Leer cada archivo
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
           fetch(archivo.download_url)
             .then(res => res.text())
             .then(texto => {
-              // 3. Extraer datos (Título, Fecha, Imagen) del texto crudo
+              // --- ZONA DE EXTRACCIÓN DE DATOS ---
               const lineas = texto.split('\n');
-              let titulo = "Noticia Sin Título";
-              let imagen = "img/default.jpg";
+              let titulo = "Noticia";
+              let imagen = "";
               let cuerpo = "";
               
-              // Buscamos la info dentro del archivo
               lineas.forEach(linea => {
-                if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/"/g, '').trim();
-                if (linea.startsWith('image:')) imagen = linea.replace('image:', '').replace(/"/g, '').trim();
-                // Si la linea no es configuración, es cuerpo de la noticia (simplificado)
-                if (!linea.includes(':') && !linea.includes('---')) cuerpo += linea + " ";
+                // Buscamos el título y quitamos comillas extra
+                if (linea.startsWith('title:')) {
+                    titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
+                }
+                // Buscamos la imagen y limpiamos la ruta
+                if (linea.startsWith('image:')) {
+                    imagen = linea.replace('image:', '').replace(/['"]+/g, '').trim();
+                    // Si la ruta empieza con /, se la quitamos para que sea relativa
+                    if (imagen.startsWith('/')) imagen = imagen.substring(1);
+                }
+                // El cuerpo de la noticia (para el subtítulo)
+                if (!linea.includes(':') && !linea.includes('---') && linea.trim() !== '') {
+                    cuerpo += linea + " ";
+                }
               });
 
-              // Recortar el texto para que no sea muy largo en portada
-              let resumen = cuerpo.substring(0, 150) + "...";
+              // Creamos un resumen corto para el H2 (primeros 200 caracteres)
+              let resumen = cuerpo.substring(0, 250) + "...";
 
-              // 4. Crear la tarjeta HTML de la noticia
+              // --- ZONA DE DISEÑO (TU ESTILO EXACTO) ---
               const tarjeta = `
-                <article style="margin-bottom: 30px; border-bottom: 1px solid #ccc; padding-bottom: 20px;">
-                  <img src="${imagen}" alt="${titulo}" style="width:100%; max-width: 600px; border-radius: 8px;">
-                  <h3 style="color: #d35400; margin-top: 10px;">${titulo}</h3>
-                  <p>${resumen}</p>
-                  <a href="#" style="font-weight: bold; color: #333;">Leer más →</a>
-                </article>
+                <div style="margin-bottom: 60px;">
+                    <br><br>
+                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate; font-size: 32px; margin-bottom: 10px;">
+                        ${titulo}
+                    </h1>
+                    
+                    <h2 style="font-weight:lighter; letter-spacing: -1px; font-size: 20px; color: #333; line-height: 1.4;">
+                        ${resumen}
+                    </h2> 
+                    
+                    <br><br>
+
+                    <div class="constitution-banner">
+                        <img src="${imagen}" alt="${titulo}" style="width: 100%; border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    </div>
+                    <br><br>
+                </div>
               `;
 
-              // 5. Insertar en la página
+              // Insertamos la noticia
               contenedor.innerHTML += tarjeta;
             });
         }
       });
     })
     .catch(error => {
-      console.error(error);
-      contenedor.innerHTML = "<p>Hubo un error cargando las noticias.</p>";
+      console.error("Error cargando noticias:", error);
     });
 </script>
 </body>
