@@ -421,53 +421,46 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // CONFIGURACIÓN: Tu repositorio
+  // CONFIGURACIÓN
   const repo = "LaHoraPicoTv/ec";
   const carpeta = "content/noticias";
+  const rama = "main"; // Tu rama principal
   const contenedor = document.getElementById('contenedor-noticias');
 
-  // 1. Obtener la lista de archivos
   fetch(`https://api.github.com/repos/${repo}/contents/${carpeta}`)
     .then(response => response.json())
     .then(archivos => {
-      contenedor.innerHTML = ""; // Limpiar mensaje de carga
-      
-      // Ordenar para que salga la más nueva arriba
+      contenedor.innerHTML = ""; 
       archivos.reverse();
 
-      // 2. Leer cada archivo
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
           fetch(archivo.download_url)
             .then(res => res.text())
             .then(texto => {
-              // --- ZONA DE EXTRACCIÓN DE DATOS ---
               const lineas = texto.split('\n');
               let titulo = "Noticia";
-              let imagen = "";
+              let imagenPath = "";
               let cuerpo = "";
               
               lineas.forEach(linea => {
-                // Buscamos el título y quitamos comillas extra
-                if (linea.startsWith('title:')) {
-                    titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
-                }
-                // Buscamos la imagen y limpiamos la ruta
+                if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
                 if (linea.startsWith('image:')) {
-                    imagen = linea.replace('image:', '').replace(/['"]+/g, '').trim();
-                    // Si la ruta empieza con /, se la quitamos para que sea relativa
-                    if (imagen.startsWith('/')) imagen = imagen.substring(1);
+                    imagenPath = linea.replace('image:', '').replace(/['"]+/g, '').trim();
+                    if (imagenPath.startsWith('/')) imagenPath = imagenPath.substring(1);
                 }
-                // El cuerpo de la noticia (para el subtítulo)
                 if (!linea.includes(':') && !linea.includes('---') && linea.trim() !== '') {
                     cuerpo += linea + " ";
                 }
               });
 
-              // Creamos un resumen corto para el H2 (primeros 200 caracteres)
               let resumen = cuerpo.substring(0, 250) + "...";
+              
+              // TRUCO MAESTRO: Usar la URL directa (RAW) de GitHub para la imagen
+              // Si no hay imagen, usamos una por defecto o no mostramos nada
+              let imagenFinal = imagenPath ? `https://raw.githubusercontent.com/${repo}/${rama}/${imagenPath}` : '';
 
-              // --- ZONA DE DISEÑO (TU ESTILO EXACTO) ---
+              // ESTRUCTURA EXACTA A TU DISEÑO ORIGINAL
               const tarjeta = `
                 <div style="margin-bottom: 60px;">
                     <br><br>
@@ -477,26 +470,25 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                     
                     <h2 style="font-weight:lighter; letter-spacing: -1px; font-size: 20px; color: #333; line-height: 1.4;">
                         ${resumen}
+                        <br>
+                        <a href="#" style="font-weight: bold; color: chocolate; font-size: 16px; text-decoration: none;">Leer más →</a>
                     </h2> 
                     
                     <br><br>
 
                     <div class="constitution-banner">
-                        <img src="${imagen}" alt="${titulo}" style="width: 100%; border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                        <img src="${imagenFinal}" alt="${titulo}" style="width: 100%; border-radius: 0px; display: block;">
                     </div>
                     <br><br>
                 </div>
               `;
 
-              // Insertamos la noticia
               contenedor.innerHTML += tarjeta;
             });
         }
       });
     })
-    .catch(error => {
-      console.error("Error cargando noticias:", error);
-    });
+    .catch(error => console.error("Error:", error));
 </script>
 </body>
 </html>
