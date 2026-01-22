@@ -449,16 +449,12 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
 
                 // 1. TÍTULO
                 if (linea.startsWith('title:') && !leyendoCuerpo) {
-                    // CORRECCIÓN: Primero trim(), luego quitar comillas
                     titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
                 }
                 
-                // 2. IMAGEN (EL FIX IMPORTANTE)
+                // 2. IMAGEN (CORREGIDO PARA QUITAR COMILLAS Y ESPACIOS)
                 if (linea.startsWith('image:') && !leyendoCuerpo) {
-                    // CORRECCIÓN: Primero trim(), luego quitar comillas
                     let rutaCruda = linea.replace('image:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                    
-                    // Si la ruta empieza con /, se la quitamos
                     if (rutaCruda.startsWith('/')) {
                         imagenPath = rutaCruda.substring(1); 
                     } else {
@@ -468,13 +464,12 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
 
                 // 3. CUERPO
                 if (lineaLimpia === '---') contadorGuiones++;
-
                 if (contadorGuiones >= 2 && lineaLimpia !== '---') {
                     if (lineaLimpia !== '') cuerpo += lineaLimpia + " ";
                 }
               });
 
-              // --- DISEÑO ---
+              // --- DISEÑO SIN BOTÓN "LEER MÁS" ---
               const tarjeta = `
                 <div style="margin-bottom: 50px;">
                     <br><br>
