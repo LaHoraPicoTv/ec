@@ -423,7 +423,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
 <script>
   // CONFIGURACIÓN
   const repo = "LaHoraPicoTv/ec";
-  const rama = "main"; // Tu rama principal
+  const rama = "main";
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
 
@@ -431,7 +431,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; 
-      archivos.reverse(); // Lo más nuevo primero
+      archivos.reverse();
 
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
@@ -440,67 +440,49 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
             .then(texto => {
               const lineas = texto.split('\n');
               let titulo = "";
-              let imagenUrl = ""; // Usaremos URL absoluta
+              let imagenUrl = "";
               let cuerpo = "";
               let leyendoCuerpo = false;
               let contadorGuiones = 0;
 
               lineas.forEach(linea => {
                 const lineaLimpia = linea.trim();
-
-                // 1. TÍTULO
                 if (linea.startsWith('title:') && !leyendoCuerpo) {
                     titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
                 }
-                
-                // 2. IMAGEN - LA SOLUCIÓN NUCLEAR
                 if (linea.startsWith('image:') && !leyendoCuerpo) {
-                    // Limpiamos la ruta cruda (ej: "/img/uploads/foto.jpg")
                     let rutaCruda = linea.replace('image:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                    
-                    // Quitamos la barra inicial si la tiene
-                    if (rutaCruda.startsWith('/')) {
-                        rutaCruda = rutaCruda.substring(1); 
-                    }
-                    
-                    // CONSTRUIMOS EL ENLACE DIRECTO A GITHUB
-                    // Esto fuerza a cargar la imagen directo de la fuente
+                    if (rutaCruda.startsWith('/')) rutaCruda = rutaCruda.substring(1); 
                     imagenUrl = `https://raw.githubusercontent.com/${repo}/${rama}/${rutaCruda}`;
                 }
-
-                // 3. CUERPO
                 if (lineaLimpia === '---') contadorGuiones++;
-                if (contadorGuiones >= 2 && lineaLimpia !== '---') {
-                    if (lineaLimpia !== '') cuerpo += lineaLimpia + " ";
+                if (contadorGuiones >= 2 && lineaLimpia !== '---' && lineaLimpia !== '') {
+                    cuerpo += lineaLimpia + " ";
                 }
               });
 
-              // --- DISEÑO FINAL ---
+              // --- DISEÑO DE DIAGNÓSTICO ---
               const tarjeta = `
-                <div style="margin-bottom: 50px;">
+                <div style="margin-bottom: 50px; border-bottom: 2px dashed red; padding-bottom: 20px;">
                     <br><br>
-                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">
-                        ${titulo}
-                    </h1>
-                    
-                    <h2 style="font-weight:lighter; letter-spacing: -1px;">
-                        ${cuerpo}
-                    </h2> 
-                    
-                    <br><br><br><br>
-
+                    <h1 style="color: chocolate;">${titulo}</h1>
+                    <h2>${cuerpo}</h2>
+                    <br>
                     <div class="constitution-banner">
-                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;" onerror="this.style.display='none'">
+                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; display: block; border: 3px solid red;">
                     </div>
+                    <p style="color: red; font-weight: bold; background: yellow; padding: 5px;">
+                        DIRECCIÓN QUE INTENTA CARGAR: <br>
+                        <a href="${imagenUrl}" target="_blank">${imagenUrl}</a>
+                    </p>
                 </div>
               `;
-              
               contenedor.innerHTML += tarjeta;
             });
         }
       });
     })
-    .catch(e => console.error("Error cargando noticias:", e));
+    .catch(e => console.error(e));
 </script>
 </body>
 </html>
