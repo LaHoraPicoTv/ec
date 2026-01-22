@@ -421,9 +421,8 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // CONFIGURACIÓN
+  // SCRIPT DE DIAGNÓSTICO "RAYOS X"
   const repo = "LaHoraPicoTv/ec";
-  const rama = "main";
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
 
@@ -431,56 +430,31 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; 
-      archivos.reverse();
+      // Solo miraremos el último archivo para no llenar la pantalla
+      const ultimo = archivos[archivos.length - 1]; 
 
-      archivos.forEach(archivo => {
-        if (archivo.name.endsWith('.md')) {
-          fetch(archivo.download_url)
-            .then(res => res.text())
-            .then(texto => {
-              const lineas = texto.split('\n');
-              let titulo = "";
-              let imagenUrl = "";
-              let cuerpo = "";
-              let leyendoCuerpo = false;
-              let contadorGuiones = 0;
+      fetch(ultimo.download_url)
+        .then(res => res.text())
+        .then(texto => {
+            // TOMAMOS LAS PRIMERAS 15 LÍNEAS DEL ARCHIVO REAL
+            const lineas = texto.split('\n');
+            let rawHeader = "";
+            for(let i=0; i<Math.min(lineas.length, 15); i++) {
+                rawHeader += lineas[i] + "<br>";
+            }
 
-              lineas.forEach(linea => {
-                const lineaLimpia = linea.trim();
-                if (linea.startsWith('title:') && !leyendoCuerpo) {
-                    titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                }
-                if (linea.startsWith('image:') && !leyendoCuerpo) {
-                    let rutaCruda = linea.replace('image:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                    if (rutaCruda.startsWith('/')) rutaCruda = rutaCruda.substring(1); 
-                    imagenUrl = `https://raw.githubusercontent.com/${repo}/${rama}/${rutaCruda}`;
-                }
-                if (lineaLimpia === '---') contadorGuiones++;
-                if (contadorGuiones >= 2 && lineaLimpia !== '---' && lineaLimpia !== '') {
-                    cuerpo += lineaLimpia + " ";
-                }
-              });
-
-              // --- DISEÑO DE DIAGNÓSTICO ---
-              const tarjeta = `
-                <div style="margin-bottom: 50px; border-bottom: 2px dashed red; padding-bottom: 20px;">
-                    <br><br>
-                    <h1 style="color: chocolate;">${titulo}</h1>
-                    <h2>${cuerpo}</h2>
-                    <br>
-                    <div class="constitution-banner">
-                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; display: block; border: 3px solid red;">
-                    </div>
-                    <p style="color: red; font-weight: bold; background: yellow; padding: 5px;">
-                        DIRECCIÓN QUE INTENTA CARGAR: <br>
-                        <a href="${imagenUrl}" target="_blank">${imagenUrl}</a>
-                    </p>
+            const tarjeta = `
+            <div style="margin: 50px auto; max-width: 800px; border: 4px solid blue; padding: 20px; text-align: left;">
+                <h2 style="color: blue; text-align: center;">🔎 REPORTE DE RAYOS X</h2>
+                <p style="text-align: center;">Aquí abajo están los datos reales de tu noticia. Busca la línea que tiene el nombre de la foto (.jpg o .png).</p>
+                
+                <div style="background: #f0f0f0; padding: 20px; font-family: 'Courier New', monospace; border: 1px solid #999; font-size: 16px; color: #000; line-height: 1.5;">
+                    ${rawHeader}
                 </div>
-              `;
-              contenedor.innerHTML += tarjeta;
-            });
-        }
-      });
+            </div>
+            `;
+            contenedor.innerHTML = tarjeta;
+        });
     })
     .catch(e => console.error(e));
 </script>
