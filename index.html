@@ -421,7 +421,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // SCRIPT V6: LECTOR INTELIGENTE (TÍTULOS LARGOS + FOTO)
+  // SCRIPT V6: LECTOR INTELIGENTE (TÍTULOS LARGOS + TEXTO COMPLETO)
   const repo = "LaHoraPicoTv/ec";
   const rama = "main";
   const carpeta = "content/noticias";
@@ -431,7 +431,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; 
-      archivos.reverse();
+      archivos.reverse(); // Lo más nuevo primero
 
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
@@ -445,9 +445,8 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
               let imagenUrl = "";
               let cuerpo = "";
               
-              // ESTADOS DE LECTURA
+              // ESTADOS DE LECTURA (Semáforos)
               let leyendoTitulo = false;
-              let leyendoCuerpo = false;
               let contadorGuiones = 0;
 
               lineas.forEach(linea => {
@@ -456,19 +455,21 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                 // 1. DETECTAR TÍTULO (Incluso si tiene varias líneas)
                 if (linea.startsWith('title:')) {
                     leyendoTitulo = true;
+                    // Quitamos 'title:' y las comillas iniciales
                     titulo = linea.replace('title:', '').trim();
                 } 
                 else if (leyendoTitulo) {
-                    // Si seguimos leyendo título y encontramos otra clave (ej: date:), paramos
-                    if (linea.match(/^[a-z]+:/)) {
+                    // Si seguimos leyendo título...
+                    // Si encontramos otra clave (ej: date:, thumbnail:) o los guiones, PARAMOS.
+                    if (lineaLimpia.startsWith('date:') || lineaLimpia.startsWith('thumbnail:') || lineaLimpia === '---') {
                         leyendoTitulo = false;
                     } else {
-                        // Si no es otra clave, es la continuación del título
+                        // Si no es otra clave, es la continuación del título. Lo sumamos.
                         titulo += " " + lineaLimpia;
                     }
                 }
 
-                // 2. DETECTAR IMAGEN (thumbnail)
+                // 2. DETECTAR IMAGEN (thumbnail) - El arreglo que ya funciona
                 if (linea.startsWith('thumbnail:')) {
                     leyendoTitulo = false; // Aseguramos salir del modo título
                     let rutaCruda = linea.replace('thumbnail:', '').trim().replace(/^["'](.*)["']$/, '$1');
@@ -490,8 +491,8 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                 }
               });
 
-              // LIMPIEZA FINAL DEL TÍTULO (Quitar comillas del principio y final si quedaron)
-              titulo = titulo.replace(/^['"]|['"]$/g, '');
+              // LIMPIEZA FINAL DEL TÍTULO (Quitar comillas sobrantes)
+              titulo = titulo.replace(/^['"]+|['"]+$/g, '');
 
               // --- DISEÑO FINAL ---
               const tarjeta = `
