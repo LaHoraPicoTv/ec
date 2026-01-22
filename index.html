@@ -412,7 +412,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // SCRIPT V6: LECTOR INTELIGENTE (TÍTULOS LARGOS + TEXTO COMPLETO)
+  // SCRIPT V7: DISEÑO IDÉNTICO AL ORIGINAL (H2 LIGHTER)
   const repo = "LaHoraPicoTv/ec";
   const rama = "main";
   const carpeta = "content/noticias";
@@ -436,71 +436,65 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
               let imagenUrl = "";
               let cuerpo = "";
               
-              // ESTADOS DE LECTURA (Semáforos)
+              // ESTADOS DE LECTURA
               let leyendoTitulo = false;
               let contadorGuiones = 0;
 
               lineas.forEach(linea => {
                 const lineaLimpia = linea.trim();
 
-                // 1. DETECTAR TÍTULO (Incluso si tiene varias líneas)
+                // 1. TÍTULO
                 if (linea.startsWith('title:')) {
                     leyendoTitulo = true;
-                    // Quitamos 'title:' y las comillas iniciales
                     titulo = linea.replace('title:', '').trim();
                 } 
                 else if (leyendoTitulo) {
-                    // Si seguimos leyendo título...
-                    // Si encontramos otra clave (ej: date:, thumbnail:) o los guiones, PARAMOS.
                     if (lineaLimpia.startsWith('date:') || lineaLimpia.startsWith('thumbnail:') || lineaLimpia === '---') {
                         leyendoTitulo = false;
                     } else {
-                        // Si no es otra clave, es la continuación del título. Lo sumamos.
                         titulo += " " + lineaLimpia;
                     }
                 }
 
-                // 2. DETECTAR IMAGEN (thumbnail) - El arreglo que ya funciona
+                // 2. IMAGEN (Thumbnail fix)
                 if (linea.startsWith('thumbnail:')) {
-                    leyendoTitulo = false; // Aseguramos salir del modo título
+                    leyendoTitulo = false;
                     let rutaCruda = linea.replace('thumbnail:', '').trim().replace(/^["'](.*)["']$/, '$1');
                     if (rutaCruda.startsWith('/')) rutaCruda = rutaCruda.substring(1); 
                     imagenUrl = `https://raw.githubusercontent.com/${repo}/${rama}/${rutaCruda}`;
                 }
 
-                // 3. DETECTAR CUERPO (Todo lo que escribas)
+                // 3. CUERPO
                 if (lineaLimpia === '---') {
                     contadorGuiones++;
-                    leyendoTitulo = false; // El cuerpo rompe cualquier lectura anterior
+                    leyendoTitulo = false;
                 }
 
                 if (contadorGuiones >= 2 && lineaLimpia !== '---') {
-                    // Agregamos saltos de línea <br> para separar párrafos visualmente
                     if (lineaLimpia !== '') {
                         cuerpo += lineaLimpia + "<br><br>";
                     }
                 }
               });
 
-              // LIMPIEZA FINAL DEL TÍTULO (Quitar comillas sobrantes)
               titulo = titulo.replace(/^['"]+|['"]+$/g, '');
 
-              // --- DISEÑO FINAL ---
+              // --- DISEÑO IDÉNTICO AL TUYO (Usando H2) ---
               const tarjeta = `
                 <div style="margin-bottom: 60px; border-bottom: 1px solid #ddd; padding-bottom: 40px;">
                     <br><br>
-                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate; font-size: 32px; line-height: 1.2;">
+                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">
                         ${titulo}
                     </h1>
                     
-                    <div style="font-family: Arial, sans-serif; font-weight:lighter; letter-spacing: -0.5px; font-size: 18px; color: #333; line-height: 1.6;">
+                    <h2 style="font-weight:lighter; letter-spacing: -1px;">
                         ${cuerpo}
-                    </div> 
+                    </h2> 
                     
-                    <br><br>
+                    <br><br><br><br>
 
                     <div class="constitution-banner">
-                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block; border-radius: 4px;" onerror="this.style.display='none'">
+                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;" onerror="this.style.display='none'">
                     </div>
                 </div>
               `;
