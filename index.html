@@ -423,6 +423,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
 <script>
   // CONFIGURACIÓN
   const repo = "LaHoraPicoTv/ec";
+  const rama = "main"; // Tu rama principal
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
 
@@ -439,7 +440,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
             .then(texto => {
               const lineas = texto.split('\n');
               let titulo = "";
-              let imagenPath = "";
+              let imagenUrl = ""; // Usaremos URL absoluta
               let cuerpo = "";
               let leyendoCuerpo = false;
               let contadorGuiones = 0;
@@ -452,14 +453,19 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                     titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
                 }
                 
-                // 2. IMAGEN (CORREGIDO PARA QUITAR COMILLAS Y ESPACIOS)
+                // 2. IMAGEN - LA SOLUCIÓN NUCLEAR
                 if (linea.startsWith('image:') && !leyendoCuerpo) {
+                    // Limpiamos la ruta cruda (ej: "/img/uploads/foto.jpg")
                     let rutaCruda = linea.replace('image:', '').trim().replace(/^["'](.*)["']$/, '$1');
+                    
+                    // Quitamos la barra inicial si la tiene
                     if (rutaCruda.startsWith('/')) {
-                        imagenPath = rutaCruda.substring(1); 
-                    } else {
-                        imagenPath = rutaCruda;
+                        rutaCruda = rutaCruda.substring(1); 
                     }
+                    
+                    // CONSTRUIMOS EL ENLACE DIRECTO A GITHUB
+                    // Esto fuerza a cargar la imagen directo de la fuente
+                    imagenUrl = `https://raw.githubusercontent.com/${repo}/${rama}/${rutaCruda}`;
                 }
 
                 // 3. CUERPO
@@ -469,7 +475,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                 }
               });
 
-              // --- DISEÑO SIN BOTÓN "LEER MÁS" ---
+              // --- DISEÑO FINAL ---
               const tarjeta = `
                 <div style="margin-bottom: 50px;">
                     <br><br>
@@ -484,7 +490,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
                     <br><br><br><br>
 
                     <div class="constitution-banner">
-                        <img src="${imagenPath}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;">
+                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;" onerror="this.style.display='none'">
                     </div>
                 </div>
               `;
