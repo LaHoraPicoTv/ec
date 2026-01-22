@@ -421,7 +421,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // SCRIPT FINAL CORREGIDO (DETECTA THUMBNAIL)
+  // SCRIPT V6: LECTOR INTELIGENTE (TÍTULOS LARGOS + FOTO)
   const repo = "LaHoraPicoTv/ec";
   const rama = "main";
   const carpeta = "content/noticias";
@@ -439,57 +439,76 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
             .then(res => res.text())
             .then(texto => {
               const lineas = texto.split('\n');
+              
+              // VARIABLES
               let titulo = "";
               let imagenUrl = "";
               let cuerpo = "";
+              
+              // ESTADOS DE LECTURA
+              let leyendoTitulo = false;
               let leyendoCuerpo = false;
               let contadorGuiones = 0;
 
               lineas.forEach(linea => {
                 const lineaLimpia = linea.trim();
 
-                // 1. TÍTULO
-                if (linea.startsWith('title:') && !leyendoCuerpo) {
-                    titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                }
-                
-                // 2. IMAGEN (AQUÍ ESTABA EL SECRETO: ES "thumbnail")
-                if (linea.startsWith('thumbnail:') && !leyendoCuerpo) {
-                    // Limpiamos la etiqueta 'thumbnail:'
-                    let rutaCruda = linea.replace('thumbnail:', '').trim().replace(/^["'](.*)["']$/, '$1');
-                    
-                    // Si empieza con barra /, se la quitamos
-                    if (rutaCruda.startsWith('/')) {
-                        rutaCruda = rutaCruda.substring(1); 
+                // 1. DETECTAR TÍTULO (Incluso si tiene varias líneas)
+                if (linea.startsWith('title:')) {
+                    leyendoTitulo = true;
+                    titulo = linea.replace('title:', '').trim();
+                } 
+                else if (leyendoTitulo) {
+                    // Si seguimos leyendo título y encontramos otra clave (ej: date:), paramos
+                    if (linea.match(/^[a-z]+:/)) {
+                        leyendoTitulo = false;
+                    } else {
+                        // Si no es otra clave, es la continuación del título
+                        titulo += " " + lineaLimpia;
                     }
-                    
-                    // Construimos el enlace blindado directo a GitHub
+                }
+
+                // 2. DETECTAR IMAGEN (thumbnail)
+                if (linea.startsWith('thumbnail:')) {
+                    leyendoTitulo = false; // Aseguramos salir del modo título
+                    let rutaCruda = linea.replace('thumbnail:', '').trim().replace(/^["'](.*)["']$/, '$1');
+                    if (rutaCruda.startsWith('/')) rutaCruda = rutaCruda.substring(1); 
                     imagenUrl = `https://raw.githubusercontent.com/${repo}/${rama}/${rutaCruda}`;
                 }
 
-                // 3. CUERPO
-                if (lineaLimpia === '---') contadorGuiones++;
+                // 3. DETECTAR CUERPO (Todo lo que escribas)
+                if (lineaLimpia === '---') {
+                    contadorGuiones++;
+                    leyendoTitulo = false; // El cuerpo rompe cualquier lectura anterior
+                }
+
                 if (contadorGuiones >= 2 && lineaLimpia !== '---') {
-                    if (lineaLimpia !== '') cuerpo += lineaLimpia + " ";
+                    // Agregamos saltos de línea <br> para separar párrafos visualmente
+                    if (lineaLimpia !== '') {
+                        cuerpo += lineaLimpia + "<br><br>";
+                    }
                 }
               });
 
-              // --- DISEÑO OFICIAL ---
+              // LIMPIEZA FINAL DEL TÍTULO (Quitar comillas del principio y final si quedaron)
+              titulo = titulo.replace(/^['"]|['"]$/g, '');
+
+              // --- DISEÑO FINAL ---
               const tarjeta = `
-                <div style="margin-bottom: 50px; border-bottom: 1px solid #ddd; padding-bottom: 40px;">
+                <div style="margin-bottom: 60px; border-bottom: 1px solid #ddd; padding-bottom: 40px;">
                     <br><br>
-                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">
+                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate; font-size: 32px; line-height: 1.2;">
                         ${titulo}
                     </h1>
                     
-                    <h2 style="font-weight:lighter; letter-spacing: -1px;">
+                    <div style="font-family: Arial, sans-serif; font-weight:lighter; letter-spacing: -0.5px; font-size: 18px; color: #333; line-height: 1.6;">
                         ${cuerpo}
-                    </h2> 
+                    </div> 
                     
-                    <br><br><br><br>
+                    <br><br>
 
                     <div class="constitution-banner">
-                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;" onerror="this.style.display='none'">
+                        <img src="${imagenUrl}" alt="${titulo}" style="width:100%; max-width: 100%; display: block; border-radius: 4px;" onerror="this.style.display='none'">
                     </div>
                 </div>
               `;
