@@ -421,7 +421,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     </footer>
     <script src="script.js"></script>
 <script>
-  // CONFIGURACIÓN BÁSICA
+  // CONFIGURACIÓN
   const repo = "LaHoraPicoTv/ec";
   const carpeta = "content/noticias";
   const contenedor = document.getElementById('contenedor-noticias');
@@ -430,7 +430,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
     .then(response => response.json())
     .then(archivos => {
       contenedor.innerHTML = ""; 
-      archivos.reverse(); // Las más nuevas primero
+      archivos.reverse(); // Lo más nuevo primero
 
       archivos.forEach(archivo => {
         if (archivo.name.endsWith('.md')) {
@@ -441,44 +441,61 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
               let titulo = "";
               let imagenPath = "";
               let cuerpo = "";
-              
+              let leyendoCuerpo = false; // Semáforo para saber cuándo empieza el texto real
+              let contadorGuiones = 0;
+
               lineas.forEach(linea => {
-                if (linea.startsWith('title:')) titulo = linea.replace('title:', '').replace(/['"]+/g, '').trim();
+                const lineaLimpia = linea.trim();
+
+                // 1. DETECTAR EL TÍTULO (en la cabecera)
+                if (linea.startsWith('title:') && !leyendoCuerpo) {
+                    titulo = linea.replace('title:', '').replace(/^["'](.*)["']$/, '$1').trim();
+                }
                 
-                // --- ARREGLO DE IMAGEN (INTENTO 2) ---
-                if (linea.startsWith('image:')) {
-                    imagenPath = linea.replace('image:', '').replace(/['"]+/g, '').trim();
-                    // TRUCO: Si la ruta empieza con "/", se la quitamos.
-                    // Dejamos que sea "img/uploads/foto.jpg" en lugar de "/img/uploads/foto.jpg"
-                    if (imagenPath.startsWith('/')) imagenPath = imagenPath.substring(1);
+                // 2. DETECTAR LA IMAGEN (y arreglar la ruta)
+                if (linea.startsWith('image:') && !leyendoCuerpo) {
+                    let rutaCruda = linea.replace('image:', '').replace(/^["'](.*)["']$/, '$1').trim();
+                    // SI LA RUTA EMPIEZA CON /, SE LA QUITAMOS PARA QUE SEA RELATIVA
+                    if (rutaCruda.startsWith('/')) {
+                        imagenPath = rutaCruda.substring(1); // "img/uploads/foto.jpg"
+                    } else {
+                        imagenPath = rutaCruda;
+                    }
                 }
 
-                // Extraer todo el cuerpo del texto
-                if (!linea.includes(':') && !linea.includes('---') && linea.trim() !== '') {
-                    cuerpo += linea + " ";
+                // 3. DETECTAR CUÁNDO TERMINA LA CONFIGURACIÓN Y EMPIEZA EL TEXTO
+                if (lineaLimpia === '---') {
+                    contadorGuiones++;
+                }
+
+                // Si ya pasamos los dos '---', todo lo demás es el cuerpo (h2)
+                if (contadorGuiones >= 2 && lineaLimpia !== '---') {
+                    if (lineaLimpia !== '') {
+                        cuerpo += lineaLimpia + " ";
+                    }
                 }
               });
 
-              // --- DISEÑO EXACTO AL TUYO ---
-              // Usamos el cuerpo entero como subtítulo H2 y quitamos el botón.
+              // --- AQUÍ ESTÁ TU DISEÑO EXACTO ---
               const tarjeta = `
-                <div style="margin-bottom: 80px; border-bottom: 2px solid chocolate; padding-bottom: 40px;">
+                <div style="margin-bottom: 50px;">
                     <br><br>
-                    <h1 style="font-family: Arial, sans-serif; font-weight: bolder; color: chocolate; font-size: 32px; letter-spacing: -1px; margin-bottom: 15px; line-height: 1.2;">
+                    <h1 style="font-family: Arial, Helvetica, sans-serif; font-weight: bolder; letter-spacing: -1px; color: chocolate;">
                         ${titulo}
                     </h1>
                     
-                    <h2 style="font-weight:lighter; font-size: 22px; color: #222; line-height: 1.5; letter-spacing: -0.5px; font-family: Arial, sans-serif;">
+                    <h2 style="font-weight:lighter; letter-spacing: -1px;">
                         ${cuerpo}
                     </h2> 
                     
-                    <br><br><br>
+                    <br><br><br><br>
 
                     <div class="constitution-banner">
-                        <img src="${imagenPath}" alt="${titulo}" style="width: 100%; border-radius: 4px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="${imagenPath}" alt="${titulo}" style="width:100%; max-width: 100%; display: block;">
                     </div>
                 </div>
               `;
+              
               contenedor.innerHTML += tarjeta;
             });
         }
