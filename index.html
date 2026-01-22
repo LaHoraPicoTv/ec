@@ -441,42 +441,40 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
               let titulo = "";
               let imagenPath = "";
               let cuerpo = "";
-              let leyendoCuerpo = false; // Semáforo para saber cuándo empieza el texto real
+              let leyendoCuerpo = false;
               let contadorGuiones = 0;
 
               lineas.forEach(linea => {
                 const lineaLimpia = linea.trim();
 
-                // 1. DETECTAR EL TÍTULO (en la cabecera)
+                // 1. TÍTULO
                 if (linea.startsWith('title:') && !leyendoCuerpo) {
-                    titulo = linea.replace('title:', '').replace(/^["'](.*)["']$/, '$1').trim();
+                    // CORRECCIÓN: Primero trim(), luego quitar comillas
+                    titulo = linea.replace('title:', '').trim().replace(/^["'](.*)["']$/, '$1');
                 }
                 
-                // 2. DETECTAR LA IMAGEN (y arreglar la ruta)
+                // 2. IMAGEN (EL FIX IMPORTANTE)
                 if (linea.startsWith('image:') && !leyendoCuerpo) {
-                    let rutaCruda = linea.replace('image:', '').replace(/^["'](.*)["']$/, '$1').trim();
-                    // SI LA RUTA EMPIEZA CON /, SE LA QUITAMOS PARA QUE SEA RELATIVA
+                    // CORRECCIÓN: Primero trim(), luego quitar comillas
+                    let rutaCruda = linea.replace('image:', '').trim().replace(/^["'](.*)["']$/, '$1');
+                    
+                    // Si la ruta empieza con /, se la quitamos
                     if (rutaCruda.startsWith('/')) {
-                        imagenPath = rutaCruda.substring(1); // "img/uploads/foto.jpg"
+                        imagenPath = rutaCruda.substring(1); 
                     } else {
                         imagenPath = rutaCruda;
                     }
                 }
 
-                // 3. DETECTAR CUÁNDO TERMINA LA CONFIGURACIÓN Y EMPIEZA EL TEXTO
-                if (lineaLimpia === '---') {
-                    contadorGuiones++;
-                }
+                // 3. CUERPO
+                if (lineaLimpia === '---') contadorGuiones++;
 
-                // Si ya pasamos los dos '---', todo lo demás es el cuerpo (h2)
                 if (contadorGuiones >= 2 && lineaLimpia !== '---') {
-                    if (lineaLimpia !== '') {
-                        cuerpo += lineaLimpia + " ";
-                    }
+                    if (lineaLimpia !== '') cuerpo += lineaLimpia + " ";
                 }
               });
 
-              // --- AQUÍ ESTÁ TU DISEÑO EXACTO ---
+              // --- DISEÑO ---
               const tarjeta = `
                 <div style="margin-bottom: 50px;">
                     <br><br>
@@ -501,7 +499,7 @@ Estamos a la espera de que CNEL confirme si continuará o no con su planificaci�
         }
       });
     })
-    .catch(e => console.error("Error:", e));
+    .catch(e => console.error("Error cargando noticias:", e));
 </script>
 </body>
 </html>
