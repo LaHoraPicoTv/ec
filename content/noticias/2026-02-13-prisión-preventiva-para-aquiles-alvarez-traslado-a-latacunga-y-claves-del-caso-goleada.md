@@ -4,12 +4,7 @@ title: "Prisión Preventiva para Aquiles Alvarez: Traslado a Latacunga y Claves
 date: 2026-02-13T13:32:00.000-05:00
 thumbnail: /img/uploads/toda-la-plata.jpeg
 ---
-
-
-
 El alcalde de Guayaquil, Aquiles Alvarez, ha sido trasladado a la cárcel de Latacunga tras dictarse prisión preventiva en su contra por presunta delincuencia organizada. La Fiscalía lo acusa, junto a sus hermanos, de liderar una red de desvío y comercio ilegal de combustibles. La administración municipal, ahora bajo Tatiana Coronel, califica la medida de persecución política pero garantiza la continuidad de los servicios.
-
-### Detalles de la Noticia
 
 Traslado y Medidas Cautelares
 En la madrugada del jueves 12 de febrero de 2026, Aquiles Alvarez fue ingresado en el Centro de Privación de Libertad Regional Cotopaxi (Latacunga). El traslado se efectuó bajo un fuerte resguardo policial desde Quito, inmediatamente después de la audiencia de formulación de cargos.
