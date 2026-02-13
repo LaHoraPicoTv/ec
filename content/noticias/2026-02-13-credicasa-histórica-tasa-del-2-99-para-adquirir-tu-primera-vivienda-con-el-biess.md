@@ -2,15 +2,9 @@
 title: "Credicasa: Histórica Tasa del 2,99% para Adquirir tu Primera Vivienda
   con el BIESS"
 date: 2026-02-13T13:35:00.000-05:00
-thumbnail: /img/uploads/imagehandler.png
+thumbnail: /img/uploads/imagen-noboa.png
 ---
-
 El Gobierno Nacional, a través del Banco del Instituto Ecuatoriano de Seguridad Social (BIESS), ha oficializado una reducción histórica en la tasa de interés hipotecaria, fijándola en el 2,99% para el programa "Vivienda Premier". Esta iniciativa busca facilitar el acceso a la primera casa propia para afiliados y jubilados, ofreciendo las cuotas más bajas del mercado y dinamizando el sector de la construcción.
-
-
-
-
-### Detalles de la Noticia
 
 Un Hito en el Sistema Financiero
 Desde el 27 de enero de 2026, la tasa de interés para el Préstamo Hipotecario Vivienda Premier se redujo del 4,99% al 2,99%.
